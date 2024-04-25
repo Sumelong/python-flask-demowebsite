@@ -5,6 +5,7 @@ from flask import g, current_app
 
 
 def init_app(app):
+    app.teardown_appcontext(close_db)
     app.cli.add_command(init_db_command)
 
 
@@ -24,3 +25,9 @@ def init_db_command():
     with current_app.open_resource('schema.sql') as f:
         db.cursor().executescript(f.read().decode("utf-8"))
     click.echo("Database successfully initialized.")
+
+
+def close_db(e=None):
+    db = g.pop("db", None)
+    if db is not None:
+        db.close()
